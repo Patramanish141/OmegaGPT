@@ -1,0 +1,26 @@
+<div class="chatWindow">
+  <app-navbar [username]="username()" (logout)="logout.emit()" />
+
+  @if (loading()) {
+    <div class="pane-status">Loading conversation…</div>
+  } @else {
+    <app-message-list
+      [messages]="messages()"
+      [streamingText]="streamingText()"
+      [isNewChat]="isNewChat()"
+    />
+  }
+
+  @if (error(); as message) {
+    <div class="chat-error" role="alert" (click)="dismissError.emit()">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <span>{{ message }}</span>
+    </div>
+  }
+
+  <app-chat-input
+    [streaming]="isStreaming()"
+    (send)="send.emit($event)"
+    (stop)="stop.emit()"
+  />
+</div>

@@ -1,0 +1,25 @@
+@if (isNewChat()) {
+  <div class="empty-state">
+    <h1>Start a new chat</h1>
+    <p>Ask anything — OmegaChat is ready when you are.</p>
+  </div>
+} @else {
+  <div class="chats" #scroller>
+    @for (message of messages(); track $index) {
+      @if (message.role === 'user') {
+        <div class="userDiv">
+          <p class="userMessage">{{ message.content }}</p>
+        </div>
+      } @else {
+        <div class="gptDiv" [innerHTML]="message.content | markdown"></div>
+      }
+    }
+
+    @if (streamingText() !== null) {
+      <div class="gptDiv streaming">
+        <span [innerHTML]="streamingText() | markdown"></span>
+        <span class="stream-caret" aria-hidden="true"></span>
+      </div>
+    }
+  </div>
+}

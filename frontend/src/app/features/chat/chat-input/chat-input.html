@@ -1,0 +1,21 @@
+<div class="chatInput">
+  <div class="inputBox">
+    <input
+      placeholder="Ask anything"
+      aria-label="Message OmegaChat"
+      [value]="draft()"
+      (input)="onInput($event)"
+      (keydown.enter)="submit()"
+    />
+    @if (streaming()) {
+      <div class="submit stop" title="Stop generating" (click)="stop.emit()">
+        <i class="fa-solid fa-stop"></i>
+      </div>
+    } @else {
+      <div class="submit" title="Send" (click)="submit()">
+        <i class="fa-solid fa-paper-plane"></i>
+      </div>
+    }
+  </div>
+  <p class="info">OmegaChat can make mistakes. Check important info.</p>
+</div>

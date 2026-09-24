@@ -1,0 +1,92 @@
+import express from 'express';
+import Thread from '../models/Thread.js';
+import getOpenAIAPIResponse from "../utils/openai.js";
+import { requireAuth } from "../middlewares/AuthMiddleware.js";
+import { appendUserMessage, appendAssistantMessage } from "../services/chatService.js";
+
+const router = express.Router();
+
+// Fail closed: without an id every query below would be unscoped, and Mongoose
+// strips undefined from filters, so find({userId: undefined}) returns everything.
+const requireUserId = (req, res, next) => {
+    if (!req.userId) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+    next();
+};
+
+router.use(requireAuth, requireUserId);
+
+//Get all routes
+router.get("/thread", async(req, res)=>{
+    try{
+        const threads = await Thread.find({userId: req.userId}).sort({updatedAt: -1});
+        res.json(threads);
+
+    } catch(err){
+        console.log(err);
+        res.status(500).json({error: "Failed to fetch threads"});
+    }
+})
+
+router.get("/thread/:threadId", async(req, res)=>{
+    const {threadId} = req.params;
+    try{
+        const thread = await Thread.findOne({ threadId, userId: req.userId });
+
+        if(!thread){
+            return res.status(404).json({error: "Thread not found"});
+        }
+
+        res.json(thread.messages);
+    }catch(err){
+        console.log(err);
+        res.status(500).json({error: "Failed to fetch chat"});
+    }
+});
+
+router.delete("/thread/:threadId", async(req, res)=>{
+    const {threadId} = req.params;
+
+    try{
+        const deletedThread = await Thread.findOneAndDelete({threadId, userId: req.userId});
+
+        if(!deletedThread){
+            return res.status(404).json({error: "Thread not found"});
+        }
+
+        res.status(200).json({success: "Thread deleted successfully"});
+    } catch(err){
+        console.log(err);
+        res.status(500).json({error: "Failed to fetch chat"});
+    }
+})
+
+// Non-streaming fallback, carried over from SigmaGPT unchanged in behaviour.
+// The Angular client uses the `chat:send` WebSocket event instead; this stays
+// for clients that cannot open a socket.
+router.post("/chat", async(req, res)=>{
+    const {threadId, message} = req.body;
+
+    if(!threadId || !message){
+        return res.status(404).json({error: "Missing required fields"})
+    }
+    try{
+        await appendUserMessage({ userId: req.userId, threadId, message });
+
+        const assistantReply = await getOpenAIAPIResponse(message);
+
+        await appendAssistantMessage({
+            userId: req.userId,
+            threadId,
+            content: assistantReply,
+        });
+
+        res.json({reply: assistantReply});
+    } catch(err){
+        console.log(err);
+        res.status(500).json({error: "Something went wrong"});
+    }
+})
+
+export default router;

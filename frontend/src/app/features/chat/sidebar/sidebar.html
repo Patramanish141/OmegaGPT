@@ -1,0 +1,40 @@
+<section class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-brand">
+      <span class="logo-mark" aria-hidden="true">Ω</span>
+      <span class="brand-name">OmegaChat</span>
+    </div>
+  </div>
+
+  <button class="new-chat-btn" type="button" (click)="newChat.emit()">
+    <i class="fa-solid fa-pen-to-square"></i>
+    <span>New chat</span>
+  </button>
+
+  @if (threads().length > 0) {
+    <div class="section-label">Recent</div>
+  }
+
+  <ul class="history">
+    @for (thread of threads(); track thread.threadId) {
+      <li
+        [class.highlighted]="thread.threadId === activeThreadId()"
+        (click)="selectThread.emit(thread.threadId)"
+      >
+        <span class="thread-title">{{ thread.title }}</span>
+        <i
+          class="fa-solid fa-trash"
+          role="button"
+          [attr.aria-label]="'Delete ' + thread.title"
+          (click)="onDelete($event, thread.threadId)"
+        ></i>
+      </li>
+    } @empty {
+      <li class="history-empty" style="cursor: default">No conversations yet</li>
+    }
+  </ul>
+
+  <div class="sign">
+    <p>By Manish Patra &hearts;</p>
+  </div>
+</section>

@@ -1,0 +1,81 @@
+name: OmegaChat CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  backend:
+    runs-on: self-hosted
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install .env from host
+        run: |
+          if [ ! -f /etc/omegachat/backend.env ]; then
+            echo "::error::/etc/omegachat/backend.env not found on the runner"
+            exit 1
+          fi
+          cp /etc/omegachat/backend.env .env
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci --omit=dev
+
+      - name: Verify .env
+        run: |
+          test -s .env || { echo "::error::backend/.env is missing or empty"; exit 1; }
+          for key in MONGODB_URI TOKEN_KEY OPENAI_API_KEY; do
+            grep -qE "^[[:space:]]*${key}[[:space:]]*=" .env || { echo "::error::${key} missing from backend/.env"; exit 1; }
+          done
+
+      # startOrRestart covers both the first deploy and every later one, and
+      # reads the app name / cwd from the ecosystem file next to server.js.
+      - name: Restart the API with pm2
+        run: |
+          sudo pm2 startOrRestart ecosystem.config.cjs --update-env
+          sudo pm2 save
+
+  frontend:
+    needs: backend
+    runs-on: self-hosted
+    defaults:
+      run:
+        working-directory: ./frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      # A separate setup-node step keyed on the frontend lockfile, so the
+      # Angular CLI toolchain is cached independently of the backend's deps.
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build the Angular app
+        run: npx ng build --configuration production
+
+      # @angular/build:application writes the browser bundle into a `browser/`
+      # subfolder of outputPath, so the deployed root is dist/omegachat/browser.
+      - name: Deploy to nginx
+        run: |
+          test -f dist/omegachat/browser/index.html || {
+            echo "::error::Angular build output not found at dist/omegachat/browser"; exit 1; }
+          sudo mkdir -p /var/www/omegachat
+          sudo rsync -a --delete dist/omegachat/browser/ /var/www/omegachat/
+          sudo nginx -t
+          sudo systemctl reload nginx

@@ -1,0 +1,21 @@
+<app-sidebar
+  [threads]="threads()"
+  [activeThreadId]="activeThreadId()"
+  (newChat)="onNewChat()"
+  (selectThread)="onSelectThread($event)"
+  (deleteThread)="onDeleteThread($event)"
+/>
+
+<app-chat-window
+  [username]="username()"
+  [messages]="messages()"
+  [streamingText]="streamingText()"
+  [isNewChat]="isNewChat()"
+  [isStreaming]="isStreaming()"
+  [loading]="loading()"
+  [error]="error()"
+  (send)="onSend($event)"
+  (stop)="onStop()"
+  (logout)="onLogout()"
+  (dismissError)="onDismissError()"
+/>
