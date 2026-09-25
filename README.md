@@ -1,4 +1,4 @@
-# OmegaChat
+# OmegaGPT
 
 An AI chat application with JWT auth, persistent multi-thread history, and
 assistant replies streamed **token by token over a WebSocket**.

@@ -1,4 +1,4 @@
-name: OmegaChat CI/CD
+name: OmegaGPT CI/CD
 
 on:
   push:

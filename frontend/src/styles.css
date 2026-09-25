@@ -1,5 +1,5 @@
 /* ---------------------------------------------------------------------
- * OmegaChat global stylesheet.
+ * OmegaGPT global stylesheet.
  *
  * Kept as one global bundle rather than split per component: several rules
  * cross component boundaries (.chatWindow h1), and markdown rendered through
@@ -1160,7 +1160,7 @@ pre{
   .auth-title { font-size: 1.4rem; }
 }
 
-/* === OmegaChat additions === */
+/* === OmegaGPT additions === */
 
 /* Sidebar wordmark. */
 .logo-mark {

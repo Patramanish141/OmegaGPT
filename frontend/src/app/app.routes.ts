@@ -8,20 +8,20 @@ export const routes: Routes = [
     path: 'login',
     canActivate: [guestGuard],
     loadComponent: () => import('./features/auth/login/login').then((m) => m.Login),
-    title: 'Sign in · OmegaChat',
+    title: 'Sign in · OmegaGPT',
   },
   {
     path: 'signup',
     canActivate: [guestGuard],
     loadComponent: () => import('./features/auth/signup/signup').then((m) => m.Signup),
-    title: 'Sign up · OmegaChat',
+    title: 'Sign up · OmegaGPT',
   },
   {
     path: '',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./features/chat/chat-page/chat-page').then((m) => m.ChatPage),
-    title: 'OmegaChat',
+    title: 'OmegaGPT',
   },
   { path: '**', redirectTo: '' },
 ];

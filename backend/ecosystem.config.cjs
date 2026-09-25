@@ -1,4 +1,4 @@
-// PM2 process definition for the OmegaChat API.
+// PM2 process definition for the OmegaGPT API.
 //
 // The file is .cjs rather than .js because backend/package.json sets
 // "type": "module", and PM2 loads its ecosystem file with require().
