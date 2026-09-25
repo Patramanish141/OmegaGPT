@@ -3,10 +3,9 @@ import { Marked } from 'marked';
 import { markedHighlight } from 'marked-highlight';
 
 /**
- * Markdown renderer for assistant replies — the Angular counterpart of
- * SigmaGPT's react-markdown + rehype-highlight pair. Output is bound with
- * [innerHTML], so Angular's sanitizer still strips scripts and event handlers
- * while keeping the `class` attributes highlight.js needs.
+ * Markdown renderer for assistant replies. Output is bound with [innerHTML],
+ * so Angular's sanitizer still strips scripts and event handlers while
+ * keeping the `class` attributes highlight.js needs.
  */
 const renderer = new Marked(
   markedHighlight({

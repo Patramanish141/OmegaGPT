@@ -1,14 +1,10 @@
-/* SigmaGPT's Login.css/Signup.css each imported a "Söhne" family from Google
- * Fonts, which does not exist there: the request returns HTTP 400 and the font
- * never loaded. Dropped — the system stack below is what actually renders. */
 /* ---------------------------------------------------------------------
  * OmegaChat global stylesheet.
  *
- * Ported wholesale from SigmaGPT's per-component CSS files, which Vite
- * concatenated into one global bundle. They stay global here for the same
- * reason: several rules cross component boundaries (.chatWindow h1), and
- * markdown rendered through [innerHTML] never receives the attribute that
- * Angular's emulated view encapsulation scopes styles with.
+ * Kept as one global bundle rather than split per component: several rules
+ * cross component boundaries (.chatWindow h1), and markdown rendered through
+ * [innerHTML] never receives the attribute that Angular's emulated view
+ * encapsulation scopes styles with.
  * --------------------------------------------------------------------- */
 
 /* === base (was index.css) === */
@@ -1166,7 +1162,7 @@ pre{
 
 /* === OmegaChat additions === */
 
-/* Sidebar wordmark, replacing SigmaGPT's bitmap logo. */
+/* Sidebar wordmark. */
 .logo-mark {
     height: 26px;
     width: 26px;

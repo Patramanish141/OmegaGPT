@@ -10,7 +10,7 @@ export interface Toast {
 
 const DISMISS_AFTER_MS = 4000;
 
-/** Minimal stand-in for SigmaGPT's react-toastify notifications. */
+/** Minimal toast notification service. */
 @Injectable({ providedIn: 'root' })
 export class ToastService {
   private nextId = 0;

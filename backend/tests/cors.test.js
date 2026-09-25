@@ -1,7 +1,7 @@
 import request from "supertest";
 import app from "../app.js";
 
-const ALLOWED_ORIGIN = "http://ec2-16-171-18-152.eu-north-1.compute.amazonaws.com";
+const ALLOWED_ORIGIN = "http://ec2-16-171-166-254.eu-north-1.compute.amazonaws.com";
 
 describe("CORS configuration", () => {
   test("answers the browser preflight for /login with credentials allowed", async () => {

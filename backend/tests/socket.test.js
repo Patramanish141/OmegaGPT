@@ -140,7 +140,7 @@ describe("message streaming", () => {
     const start = await started;
     expect(start.threadId).toBe("thread-1");
     expect(start.messageId).toEqual(expect.any(String));
-    // A new thread is titled after its first user message, as in SigmaGPT.
+    // A new thread is titled after its first user message.
     expect(start.title).toBe("Hi there");
 
     const { tokens, done } = await streamed;

@@ -62,9 +62,8 @@ router.delete("/thread/:threadId", async(req, res)=>{
     }
 })
 
-// Non-streaming fallback, carried over from SigmaGPT unchanged in behaviour.
-// The Angular client uses the `chat:send` WebSocket event instead; this stays
-// for clients that cannot open a socket.
+// Non-streaming fallback. The Angular client uses the `chat:send` WebSocket
+// event instead; this stays for clients that cannot open a socket.
 router.post("/chat", async(req, res)=>{
     const {threadId, message} = req.body;
 

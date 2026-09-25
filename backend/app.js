@@ -24,7 +24,7 @@ app.get("/health", (req, res) => res.json({ status: "ok" }));
 app.use("/api/auth", authRoute);
 app.use("/api", chatRoutes);
 
-// SigmaGPT's original root mount, kept so existing clients and tests still work.
+// Also mounted at root so clients that predate the /api/auth prefix still work.
 app.use("/", authRoute);
 
 export default app;

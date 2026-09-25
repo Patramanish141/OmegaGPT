@@ -3,17 +3,18 @@
 An AI chat application with JWT auth, persistent multi-thread history, and
 assistant replies streamed **token by token over a WebSocket**.
 
-OmegaChat is an **Angular + WebSocket rebuild of [SigmaGPT](../SigmaGPT)**. Same
-product, two deliberate changes:
+---
 
-| | SigmaGPT | OmegaChat |
-|---|---|---|
-| Frontend | React 19 + Vite (JavaScript) | **Angular 22 + TypeScript** |
-| Reply delivery | One `POST /api/chat`, whole reply in the response body | **Socket.IO stream, one frame per token** |
-| Stack | MERN | **MEAN** |
+## Try it
 
-The backend is otherwise a port of SigmaGPT's: same Express app, same Mongoose
-schemas, same JWT-in-a-cookie auth, same route middleware.
+**Live:** <http://ec2-16-171-166-254.eu-north-1.compute.amazonaws.com>
+
+Log in with the demo account — no signup needed:
+
+| Field | Value |
+|---|---|
+| Email | `demo@omegachat.dev` |
+| Password | `Demo@1234` |
 
 ---
 
@@ -62,7 +63,7 @@ src/app/
 │   ├── api.tokens.ts              API_BASE_URL injection token ('' = same origin)
 │   ├── models/                    ChatMessage, Thread, and the socket event contracts
 │   ├── guards/
-│   │   ├── auth.guard.ts          protects the chat route  (≈ requireAuth middleware)
+│   │   ├── auth.guard.ts          protects the chat route
 │   │   └── guest.guard.ts         keeps signed-in users off /login and /signup
 │   └── services/
 │       ├── auth.service.ts        login / signup / logout / session probe (HttpClient)
@@ -70,8 +71,8 @@ src/app/
 │       ├── thread-api.service.ts  list / read / delete threads (HttpClient)
 │       └── chat.service.ts        all chat state; the only consumer of the socket
 ├── shared/
-│   ├── markdown.ts / .pipe.ts     marked + highlight.js  (≈ react-markdown + rehype-highlight)
-│   └── toast/                     notifications          (≈ react-toastify)
+│   ├── markdown.ts / .pipe.ts     marked + highlight.js rendering
+│   └── toast/                     notifications
 └── features/
     ├── auth/login, auth/signup    SMART  — reactive forms over AuthService
     └── chat/
@@ -99,8 +100,7 @@ detection here, not `zone.js`.
 connects `withCredentials: true`. A server-side middleware verifies the JWT and
 loads the user before the connection is accepted. Non-browser clients may pass
 the same JWT as `auth: { token }` instead. A failed handshake is rejected with
-`connect_error` carrying the message `Unauthorized` — there is no anonymous
-connection state.
+`connect_error` carrying the message `Unauthorized`.
 
 ### Client → server
 
@@ -114,7 +114,7 @@ connection state.
 | Event | Payload | Meaning |
 |---|---|---|
 | `session:ready` | `{ userId: string, username: string }` | Emitted once on connect; confirms who the socket belongs to. |
-| `chat:start` | `{ threadId, messageId, title }` | The turn was accepted, the user's message is persisted, tokens follow. `messageId` (a UUID) tags this turn. |
+| `chat:start` | `{ threadId, messageId, title }` | The turn was accepted, the user's message is persisted, tokens follow. |
 | `chat:token` | `{ threadId, messageId, token }` | One chunk of the reply. Concatenate in arrival order. |
 | `chat:done` | `{ threadId, messageId, content, aborted }` | The turn ended. `content` is the full reply as stored; `aborted` is `true` when it was stopped early. |
 | `chat:error` | `{ threadId, messageId, code, message }` | The turn failed. `threadId`/`messageId` may be `null` if it never started. |
@@ -127,10 +127,6 @@ connection state.
 | `BAD_REQUEST` | `threadId` or `message` missing/blank | No |
 | `STREAM_IN_PROGRESS` | A reply is already streaming on this connection | No |
 | `STREAM_FAILED` | The model call failed mid-turn | Yes |
-
-`ChatService` uses that last column: on `BAD_REQUEST` and `STREAM_IN_PROGRESS`
-it rolls the optimistic user bubble back, and on `STREAM_FAILED` it leaves it on
-screen, because the server stored it.
 
 ### A normal turn
 
@@ -148,14 +144,13 @@ client                                   server
 ### Rules the implementation guarantees
 
 - **One turn per connection.** A second `chat:send` while a reply is streaming
-  is refused with `STREAM_IN_PROGRESS`, so two token streams can never
-  interleave into one transcript.
+  is refused with `STREAM_IN_PROGRESS`.
 - **Nothing is lost.** The user's message is persisted at `chat:start`, before
   the model is called. The assistant's message is persisted when the turn ends —
   including a partial reply after a `chat:stop` or a dropped connection.
 - **A disconnect aborts the model call.** Dropping the socket fires the
   `AbortSignal` passed to the OpenAI SDK, so nobody pays for tokens no one will
-  read. Whatever already arrived is still saved.
+  read.
 - **Sockets are scoped to their user.** Every read and write is filtered by the
   `userId` from the JWT, so a guessed or reused `threadId` cannot reach another
   account's thread.
@@ -163,10 +158,6 @@ client                                   server
 ---
 
 ## REST API
-
-Auth is mounted twice: under `/api/auth` (what the Angular client and nginx
-use) and at the root (SigmaGPT's original paths, kept for compatibility). The
-SPA owns the bare `/login` and `/signup` URLs for its own router.
 
 | Method | Endpoint | Body | Description |
 |---|---|---|---|
@@ -177,7 +168,7 @@ SPA owns the bare `/login` and `/signup` URLs for its own router.
 | GET | `/api/thread` | — | Threads, newest first |
 | GET | `/api/thread/:threadId` | — | Messages in a thread |
 | DELETE | `/api/thread/:threadId` | — | Delete a thread |
-| POST | `/api/chat` | `{ threadId, message }` | **Non-streaming fallback**, carried over from SigmaGPT. The Angular client does not use it. |
+| POST | `/api/chat` | `{ threadId, message }` | Non-streaming fallback; the Angular client does not use it |
 | GET | `/health` | — | Liveness probe |
 
 Everything under `/api` except `/api/auth` requires a valid `token` cookie and
@@ -236,8 +227,8 @@ Open <http://localhost:4200>.
 
 ### Backend — Jest + Supertest (46 tests)
 
-In-memory MongoDB via `mongodb-memory-server` and a mocked OpenAI client, the
-same approach SigmaGPT used. No real database, no real API calls.
+In-memory MongoDB via `mongodb-memory-server` and a mocked OpenAI client. No
+real database, no real API calls.
 
 ```bash
 cd backend
@@ -254,9 +245,7 @@ npm run test:coverage
 | `socket.test.js` | **WebSocket:** handshake auth (no cookie, malformed token, wrong secret, deleted user, valid cookie, `auth.token`), token-by-token streaming, history replay, persistence, `thread:updated`, validation, concurrent-send refusal, model failure, per-user isolation, `chat:stop`, and disconnect mid-stream |
 
 The socket tests drive a real `http.Server` with a real Socket.IO server and a
-real `socket.io-client`; only the model call is mocked. Abort paths use a
-generator that hangs until its `AbortSignal` fires, so they assert on behaviour
-rather than on timing.
+real `socket.io-client`; only the model call is mocked.
 
 ### Frontend — Vitest via `ng test` (39 tests)
 
@@ -276,9 +265,7 @@ npm test
 
 ## Deployment
 
-Nothing here deploys itself; the pieces are:
-
-**`.github/workflows/deploy.yml`** — two sequential jobs on the self-hosted
+**`.github/workflows/deploy.yml`** — two sequential jobs on a self-hosted
 runner. `backend` installs production deps, checks `/etc/omegachat/backend.env`
 has the three required keys, and restarts PM2. `frontend` runs its own
 `actions/setup-node` cache keyed on `frontend/package-lock.json`, runs
@@ -309,10 +296,6 @@ sudo cp deploy/nginx/omegachat.conf /etc/nginx/sites-available/omegachat
 sudo ln -s /etc/nginx/sites-available/omegachat /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
 ```
-
-`/var/www/omegachat` is a separate root from SigmaGPT's `/var/www/html`, so both
-apps can sit on the same instance. They would still contend for port 8080 —
-give one of them a different `PORT` before running both.
 
 ---
 

@@ -2,7 +2,7 @@ import "dotenv/config";
 
 const DEFAULT_ORIGINS = [
   "http://localhost:4200",
-  "http://ec2-16-171-18-152.eu-north-1.compute.amazonaws.com",
+  "http://ec2-16-171-166-254.eu-north-1.compute.amazonaws.com",
 ];
 
 // CORS_ORIGINS="https://a.example,https://b.example"

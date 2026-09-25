@@ -15,9 +15,7 @@ export const getClient = () => {
 };
 
 /**
- * Non-streaming completion. Kept with SigmaGPT's original signature (a bare
- * message string) so the legacy REST fallback at POST /api/chat behaves the
- * same as it did there.
+ * Non-streaming completion, used by the legacy REST fallback at POST /api/chat.
  *
  * @param {string} message
  * @returns {Promise<string>} the assistant reply

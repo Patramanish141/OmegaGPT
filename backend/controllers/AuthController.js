@@ -68,8 +68,8 @@ export const Login = async (req, res) => {
   }
 };
 
-// The token cookie is httpOnly, so the browser cannot clear it itself the way
-// SigmaGPT's frontend did — logout has to happen server-side.
+// The token cookie is httpOnly, so the browser cannot clear it itself —
+// logout has to happen server-side.
 export const Logout = (req, res) => {
   const { maxAge, ...clearOptions } = cookieOptions;
   res.clearCookie("token", clearOptions);
