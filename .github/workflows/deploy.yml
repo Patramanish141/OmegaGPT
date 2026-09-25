@@ -38,12 +38,10 @@ jobs:
             grep -qE "^[[:space:]]*${key}[[:space:]]*=" .env || { echo "::error::${key} missing from backend/.env"; exit 1; }
           done
 
-      # startOrRestart covers both the first deploy and every later one, and
-      # reads the app name / cwd from the ecosystem file next to server.js.
       - name: Restart the API with pm2
         run: |
-          sudo pm2 startOrRestart ecosystem.config.cjs --update-env
-          sudo pm2 save
+          pm2 startOrRestart ecosystem.config.cjs --update-env
+          pm2 save
 
   frontend:
     needs: backend
@@ -54,8 +52,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # A separate setup-node step keyed on the frontend lockfile, so the
-      # Angular CLI toolchain is cached independently of the backend's deps.
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
@@ -69,8 +65,6 @@ jobs:
       - name: Build the Angular app
         run: npx ng build --configuration production
 
-      # @angular/build:application writes the browser bundle into a `browser/`
-      # subfolder of outputPath, so the deployed root is dist/omegachat/browser.
       - name: Deploy to nginx
         run: |
           test -f dist/omegachat/browser/index.html || {
